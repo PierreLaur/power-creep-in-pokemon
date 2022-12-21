@@ -1,0 +1,93 @@
+```{r}
+library(tidyverse)
+pokedex <- read.csv("data/pokedex.csv")
+favourites <- read.csv("data/favourites.csv")
+proplay <- read.csv("data/proplay.csv")
+```
+
+```{r}
+# get the number of votes for each pokemon
+favourites <- favourites %>% count(What.is.your.favourite.Pokémon.)
+# deleting a row with a blank vote
+favourites <- favourites[-c(1), ]
+```
+
+```{r}
+# merging the datasets
+favourites <- rename(favourites, "name" = "What.is.your.favourite.Pokémon.")
+favourites <- rename(favourites, "n_votes" = "n")
+
+pokemon <- merge(pokedex, favourites, by = "name", all.x = TRUE)
+pokemon <- merge(pokemon, proplay, by = "name", all.x = TRUE)
+
+pokemon <- pokemon[c(
+    "name", "pokedex_number", "generation",
+    "status", "type_number", "type_1", "type_2",
+    "height_m", "weight_kg",
+    "abilities_number", "ability_1", "ability_2",
+    "total_points", "hp", "attack", "defense",
+    "sp_attack", "sp_defense", "speed",
+    "n_votes", "proplay_usage"
+)]
+head(pokemon)
+```
+
+```{r}
+# Distribution des points de stats par génération
+pokemon_f[generation] <- factor(pokemon[generation])
+pokemon %>%
+    group_by(generation) %>%
+    ggplot(aes(generation, total_points, group = generation)) +
+    geom_boxplot(fill = "#AA00FF")
+
+ggsave("stats.png")
+```
+
+```{r}
+# Nombre de légendaires par génération
+pokemon %>%
+    filter(status != "Normal") %>%
+    filter(generation != 8) %>%
+    group_by(generation) %>%
+    count() %>%
+    ggplot(aes(x = generation, y = n)) +
+    geom_bar(stat = "identity", fill = "#AA00FF")
+
+ggsave("legendaries.png")
+```
+
+```{r}
+# Somme des votes par génération
+pokemon_nona_votes <- pokemon[!is.na(pokemon["n_votes"]), ]
+pokemon_nona_votes %>%
+    group_by(generation) %>%
+    summarise(n_votes = sum(n_votes)) %>%
+    ggplot(aes(x = generation, y = n_votes)) +
+    geom_bar(stat = "identity", fill = "#286c0c")
+
+ggsave("votes.png")
+```
+
+```{r}
+# distribution des votes dans la génération 1
+pokemon %>%
+    replace(is.na(.), 0) %>%
+    group_by(generation) %>%
+    filter(generation == 1) %>%
+    ggplot(aes(n_votes)) +
+    geom_density(kernel = "gaussian", fill = "#3939ac")
+
+ggsave("votes_gen1.png")
+```
+
+```{r}
+# Somme des pokémons choisis en compétition par génération
+pokemon_nona_proplay <- pokemon[!is.na(pokemon["proplay_usage"]), ]
+pokemon_nona_proplay %>%
+    group_by(generation) %>%
+    summarise(n_picks = sum(proplay_usage)) %>%
+    ggplot(aes(generation, n_picks)) +
+    geom_bar(stat = "identity", fill = "#cd2323")
+
+ggsave("proplay.png")
+```

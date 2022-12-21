@@ -1,0 +1,48 @@
+```{r}
+library(tidyverse)
+clouds <- read.csv("dataCloud.csv")
+clouds$cluster <- factor(clouds$cluster)
+head(clouds)
+```
+
+```{r}
+ggplot(clouds, aes(x, y, color = cluster)) +
+    geom_point() +
+    theme(axis.text.y = element_blank())
+``` 
+
+```{r}
+clusters_kmeans <- kmeans(clouds, 3)
+head(clusters_kmeans)
+df <- data.frame(clusters_kmeans$centers)
+ggplot() +
+    geom_point(data = clouds, mapping = aes(x, y, color = factor(clusters_kmeans$cluster))) +
+    geom_point(data = df, mapping = aes(x, y), color = "red")
+
+clusters_kmeans$centers
+``` 
+
+```{r}
+no2 <- read.csv("dataset/NO2_12021_MAZADE.csv")
+o3 <- read.csv("dataset/O3_12021_MAZADE.csv")
+pm10 <- read.csv("dataset/PM10_12021_MAZADE.csv")
+pm25 <- read.csv("dataset/PM25_12021_MAZADE.csv")
+
+mazade <- merge(no2, o3)
+mazade <- merge(mazade, pm10)
+mazade <- merge(mazade, pm25)
+
+ggplot(mazade) +
+    geom_line(aes(t, NO2), color = "red") +
+    geom_line(aes(t, O3), color = "blue") +
+    geom_line(aes(t, PM10), color = "green") +
+    geom_line(aes(t, PM25), color = "black")
+```
+
+```{r}
+cor_pm <- function(station) {
+    nona <- na.omit(station)
+    cor(nona$PM10, nona$PM25, method = "pearson")
+}
+cor_pm(mazade)
+```
