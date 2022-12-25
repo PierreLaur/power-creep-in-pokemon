@@ -40,7 +40,7 @@ pokemon %>%
     ggplot(aes(generation, total_points, group = generation)) +
     geom_boxplot(fill = "#AA00FF")
 
-ggsave("stats.png")
+ggsave("figures/stats.png")
 ```
 
 ```{r}
@@ -53,7 +53,7 @@ pokemon %>%
     ggplot(aes(x = generation, y = n)) +
     geom_bar(stat = "identity", fill = "#AA00FF")
 
-ggsave("legendaries.png")
+ggsave("figures/legendaries.png")
 ```
 
 ```{r}
@@ -65,7 +65,7 @@ pokemon_nona_votes %>%
     ggplot(aes(x = generation, y = n_votes)) +
     geom_bar(stat = "identity", fill = "#286c0c")
 
-ggsave("votes.png")
+ggsave("figures/votes.png")
 ```
 
 ```{r}
@@ -77,7 +77,7 @@ pokemon %>%
     ggplot(aes(n_votes)) +
     geom_density(kernel = "gaussian", fill = "#3939ac")
 
-ggsave("votes_gen1.png")
+ggsave("figures/votes_gen1.png")
 ```
 
 ```{r}
@@ -89,7 +89,7 @@ pokemon_nona_proplay %>%
     ggplot(aes(generation, n_picks)) +
     geom_bar(stat = "identity", fill = "#cd2323")
 
-ggsave("proplay.png")
+ggsave("figures/proplay.png")
 ```
 
 ```{r}
