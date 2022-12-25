@@ -91,3 +91,33 @@ pokemon_nona_proplay %>%
 
 ggsave("proplay.png")
 ```
+
+```{r}
+# Type popularity
+type2 <- pokemon_nona_votes[-c(6)]
+type2 <- type2[which(type2$type_2 != ""), ] %>% rename("type_1" = "type_2")
+type1 <- pokemon_nona_votes[-c(7)] %>%
+    full_join(type2) %>%
+    group_by(type_1) %>%
+    arrange(type_1)
+summary <- summarise(type1, n_votes = sum(n_votes)) %>% arrange(type_1)
+summary["n_pokemon"] <- count(type1)$n
+summary["weighted_n_votes"] <- summary["n_votes"] / count(type1)$n
+summary %>% arrange(desc(weighted_n_votes))
+```
+
+```{r}
+pokemon_nona_votes %>%
+    arrange(n_votes) %>%
+    select(name, n_votes)
+pokemon %>%
+    arrange(name) %>%
+    select(name, n_votes)
+favourites
+```
+
+```{r}
+pokemon %>%
+    arrange(desc(total_points)) %>%
+    select(name, total_points)
+```
