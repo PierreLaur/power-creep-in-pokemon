@@ -1,1 +1,1 @@
-linguist-detectable=true
+*.* linguist-language=R
