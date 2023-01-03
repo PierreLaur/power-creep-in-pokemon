@@ -21,7 +21,7 @@ pokemon <- merge(pokedex, favourites, by = "name", all.x = TRUE)
 pokemon <- merge(pokemon, proplay, by = "name", all.x = TRUE)
 
 pokemon <- pokemon[c(
-    "name", "pokedex_number", "generation",
+    "pokedex_number", "name", "generation",
     "status", "type_number", "type_1", "type_2",
     "height_m", "weight_kg",
     "abilities_number", "ability_1", "ability_2",
@@ -34,26 +34,38 @@ head(pokemon)
 
 ```{r}
 # Distribution des points de stats par génération
-pokemon_f[generation] <- factor(pokemon[generation])
 pokemon %>%
     group_by(generation) %>%
     ggplot(aes(generation, total_points, group = generation)) +
     geom_boxplot(fill = "#AA00FF")
-
 ggsave("figures/stats.png")
+
+pokemon %>%
+    group_by(generation) %>%
+    ggplot(aes(generation, total_points, group = generation)) +
+    geom_boxplot(fill = "#AA00FF", outlier.shape = NA) +
+    scale_y_continuous(limits = quantile(pokemon$total_points, c(0.1, 0.9)))
+ggsave("figures/stats_no_outlier.png")
 ```
 
 ```{r}
 # Nombre de légendaires par génération
 pokemon %>%
     filter(status != "Normal") %>%
-    filter(generation != 8) %>%
     group_by(generation) %>%
     count() %>%
     ggplot(aes(x = generation, y = n)) +
     geom_bar(stat = "identity", fill = "#AA00FF")
 
 ggsave("figures/legendaries.png")
+
+pokemon %>%
+    filter(status == "Normal") %>%
+    group_by(generation) %>%
+    ggplot(aes(generation, total_points, group = generation)) +
+    geom_boxplot(fill = "#AA00FF", outlier.shape = NA) +
+    scale_y_continuous(limits = quantile(pokemon$total_points, c(0.1, 0.9)))
+ggsave("figures/stats_no_legendaries.png")
 ```
 
 ```{r}
@@ -66,6 +78,11 @@ pokemon_nona_votes %>%
     geom_bar(stat = "identity", fill = "#286c0c")
 
 ggsave("figures/votes.png")
+
+# Corrélation entre puissance et popularité
+pokemon_nona <- pokemon_nona_votes[!is.na(pokemon_nona_votes["proplay_usage"]), ]
+cor(pokemon_nona_votes$total_points, pokemon_nona_votes$n_votes, method = "pearson")
+cor(pokemon_nona$proplay_usage, pokemon_nona$n_votes, method = "pearson")
 ```
 
 ```{r}
@@ -104,20 +121,4 @@ summary <- summarise(type1, n_votes = sum(n_votes)) %>% arrange(type_1)
 summary["n_pokemon"] <- count(type1)$n
 summary["weighted_n_votes"] <- summary["n_votes"] / count(type1)$n
 summary %>% arrange(desc(weighted_n_votes))
-```
-
-```{r}
-pokemon_nona_votes %>%
-    arrange(n_votes) %>%
-    select(name, n_votes)
-pokemon %>%
-    arrange(name) %>%
-    select(name, n_votes)
-favourites
-```
-
-```{r}
-pokemon %>%
-    arrange(desc(total_points)) %>%
-    select(name, total_points)
 ```
